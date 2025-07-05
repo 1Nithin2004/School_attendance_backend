@@ -10,11 +10,19 @@ exports.getUsers = (req, res) => {
 exports.getUserById = (req, res) => {
     User.getById(req.params.id, (err, result) => {
         if (err) throw err;
-        res.json(result[0]);
+        if(result[0]) res.status(200).json(result[0]); else res.status(404).json([])
     });
 };
 
-exports. createUser = (req, res) => {
+// Get all students in Class 6
+exports.getClassStudents = (req, res) => {
+    User.getClass6(req.params.class_id, (err, results) => {
+        if (err) return res.status(500).json({ error: err });
+       return res.status(200).json(results);
+    });
+};
+
+exports.createUser = (req, res) => {
     User.create(req.body, (err, result) => {
         if (err) throw err;
         res.json({ message: 'User created', id: result.insertId });

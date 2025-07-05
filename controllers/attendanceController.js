@@ -29,28 +29,29 @@ exports.getAttendanceReport = (req, res) => {
     const classId = req.params.classId;
 
     const query = `
-        SELECT student_id, 
-               COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_classes,
-               COUNT(*) AS total_classes
-        FROM attendance
-        WHERE class_id = ?
-        GROUP BY student_id
+        SELECT 
+            a.student_id,
+            u.Full_Name AS name,
+            COUNT(CASE WHEN a.status = 'present' THEN 1 END) AS present_classes,
+            COUNT(*) AS total_classes
+        FROM attendance a
+        JOIN user u ON a.student_id = u.Id
+        WHERE a.class_id = ?
+        GROUP BY a.student_id, u.Full_Name
     `;
 
     db.query(query, [classId], (err, results) => {
         if (err) return res.status(500).json({ error: err });
 
-        // Calculate attendance percentage and check for division by zero
         const report = results.map(result => {
-            const presentClasses = result.present_classes || 0;  // Ensure it defaults to 0 if null
-            const totalClasses = result.total_classes || 0;  // Ensure it defaults to 0 if null
-
-            // If totalClasses is 0, set attendance percentage to 0 to avoid NaN
+            const presentClasses = result.present_classes || 0;
+            const totalClasses = result.total_classes || 0;
             const attendancePercentage = totalClasses > 0 ? (presentClasses / totalClasses) * 100 : 0;
 
             return {
                 student_id: result.student_id,
-                attendance_percentage: attendancePercentage.toFixed(2), // Round to 2 decimal places
+                name: result.name,
+                attendance_percentage: attendancePercentage.toFixed(2),
                 status: attendancePercentage < 70 ? 'red' : 'green'
             };
         });

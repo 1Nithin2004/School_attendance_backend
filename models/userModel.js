@@ -21,9 +21,12 @@ const User = {
         db.query(sql, [email_address, password], callback);
     },
     resetPassword: (email_address, newPassword, callback) => {
-    db.query('UPDATE user SET Password = ? WHERE email_address = ?', [newPassword, email_address], callback);
-}
-
+        db.query('UPDATE user SET Password = ? WHERE email_address = ?', [newPassword, email_address], callback);   
+    },
+    getClass6: (class_id, callback) => {
+        const query = 'SELECT * FROM user WHERE Class = ? AND User_type = "Parent"';
+        db.query(query, [class_id], callback);
+    }
 };
 
 module.exports = User;
