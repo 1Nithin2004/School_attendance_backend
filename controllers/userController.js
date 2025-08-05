@@ -6,13 +6,33 @@ exports.getUsers = (req, res) => {
         res.json(results);
     });
 };
+exports.getTeachers = (req, res) => {
+    User.getTeachers((err, results) => {
+        if (err) throw err;
+        res.json(results);
+    });
+};
 
 exports.getUserById = (req, res) => {
     User.getById(req.params.id, (err, result) => {
         if (err) throw err;
-        if(result[0]) res.status(200).json(result[0]); else res.status(404).json([])
+
+        if (result[0]) {
+            // Format the date before sending response
+            const user = {
+                ...result[0],
+                Date_of_Birth: new Date(result[0].Date_of_Birth).toLocaleDateString('en-GB', {
+                    timeZone: 'Asia/Kolkata'
+                })
+            };
+
+            res.status(200).json(user);
+        } else {
+            res.status(404).json([]);
+        }
     });
 };
+
 
 // Get all students in Class 6
 exports.getClassStudents = (req, res) => {
@@ -77,7 +97,7 @@ exports.loginUser = (req, res) => {
         // Respond based on user_type
         if (user.User_type === 'Teacher') {
             res.status(200).json({ message: 'Teacher login successful', user });
-        } else if (user.User_type === 'parent') {
+        } else if (user.User_type === 'Parent') {
             res.status(200).json({ message: 'Parent login successful', user });
         } else if (user.User_type === 'admin') {
             res.status(200).json({ message: 'Admin login successful', user });

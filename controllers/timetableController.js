@@ -25,12 +25,12 @@ exports.getTimetableByClassId = (req, res) => {
   const query = `
     SELECT 
       t.period, 
-      c.class_name, 
-      s.subject_name, 
-      u.Full_Name AS teacher_name, 
       t.day, 
       t.start_time, 
-      t.end_time
+      t.end_time,
+      s.subject_name, 
+      u.Full_Name AS teacher_name ,
+      c.class_name
     FROM timetable t
     LEFT JOIN classes c ON c.id = t.class_id
     LEFT JOIN subjects s ON s.id = t.subject_id

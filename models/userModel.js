@@ -26,6 +26,10 @@ const User = {
     getClass6: (class_id, callback) => {
         const query = 'SELECT * FROM user WHERE Class = ? AND User_type = "Parent"';
         db.query(query, [class_id], callback);
+    },
+    getTeachers: (callback) => {
+        const query = 'SELECT * FROM user WHERE User_type = "Teacher"';
+        db.query(query, callback);
     }
 };
 

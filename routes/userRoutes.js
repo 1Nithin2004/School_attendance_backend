@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 
 router.get('/getUsers', userController.getUsers);
+router.get('/getTeachers', userController.getTeachers);
 router.post('/createUser', userController.createUser);
 router.post('/login',userController.loginUser);
 router.post('/reset-password', userController.resetPassword);
