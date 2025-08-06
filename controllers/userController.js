@@ -8,7 +8,20 @@ exports.getUsers = (req, res) => {
 };
 exports.getTeachers = (req, res) => {
     User.getTeachers((err, results) => {
-        if (err) throw err;
+        if (err) {
+            console.error("Error fetching teachers:", err);
+            return res.status(500).json({ error: "Failed to fetch teachers" });
+        }
+        res.json(results);
+    });
+};
+
+exports.getStudents = (req, res) => {
+    User.getStudents((err, results) => {
+        if (err) {
+            console.error("Error fetching students:", err);
+            return res.status(500).json({ error: "Failed to fetch students" });
+        }
         res.json(results);
     });
 };
@@ -125,5 +138,64 @@ exports.resetPassword = (req, res) => {
         }
 
         res.status(200).json({ message: 'Password reset successfully' });
+    });
+};
+exports.addTeacher = (req, res) => {
+    const { name, email, phoneNumber, password } = req.body;
+
+    if (!name || !email || !phoneNumber || !password) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const teacherData = {
+        Full_Name: name,
+        email_address: email,
+        Phone_Number: phoneNumber,
+        Password: password,
+        User_type: 'Teacher'  // ensure 'Teacher' matches what's stored in DB
+    };
+
+    User.create(teacherData, (err, result) => {
+        if (err) {
+            console.error('Error adding teacher:', err);
+            return res.status(500).json({ message: 'Error creating teacher', error: err });
+        }
+
+        res.status(201).json({ message: 'Teacher added successfully', id: result.insertId });
+    });
+};
+exports.addStudent = (req, res) => {
+    const {
+        name,
+        email,
+        phoneNumber,
+        password,
+        parentsName,
+        dob,
+        studentClass
+    } = req.body;
+
+    if (!name || !email || !phoneNumber || !password || !parentsName || !dob || !studentClass) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const studentData = {
+        Full_Name: name,
+        email_address: email,
+        Phone_Number: phoneNumber,
+        Password: password,
+        Parents_name: parentsName,
+        Date_of_Birth: dob,
+        Class: studentClass,
+        User_type: 'Parent' // to distinguish in DB
+    };
+
+    User.create(studentData, (err, result) => {
+        if (err) {
+            console.error('Error adding student:', err);
+            return res.status(500).json({ message: 'Error creating student', error: err });
+        }
+
+        res.status(201).json({ message: 'Student added successfully', id: result.insertId });
     });
 };
