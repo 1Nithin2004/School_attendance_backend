@@ -34,6 +34,14 @@ const User = {
     getStudents: (callback) => {
         const query = 'SELECT * FROM user WHERE User_type = "Parent"';
         db.query(query, callback);
+    },
+    deleteTeacher: (id, callback) => {
+    const query = 'DELETE FROM user WHERE id = ? AND User_type = "Teacher"';
+    db.query(query, [id], callback);
+    },
+    deleteStudent: (id, callback) => {
+    const query = 'DELETE FROM user WHERE id = ? AND User_type = "Parent"';
+    db.query(query, [id], callback);
     }
 };
 

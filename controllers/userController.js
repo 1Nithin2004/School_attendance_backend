@@ -15,7 +15,38 @@ exports.getTeachers = (req, res) => {
         res.json(results);
     });
 };
+exports.deleteTeacher = (req, res) => {
+    const teacherId = req.params.id;
 
+    User.deleteTeacher(teacherId, (err, result) => {
+        if (err) {
+            console.error('Error deleting teacher:', err);
+            return res.status(500).json({ message: 'Failed to delete teacher' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Teacher not found or not a teacher' });
+        }
+
+        res.status(200).json({ message: 'Teacher deleted successfully' });
+    });
+};
+exports.deleteStudent = (req, res) => {
+    const studentId = req.params.id;
+
+    User.deleteStudent(studentId, (err, result) => {
+        if (err) {
+            console.error('Error deleting student:', err);
+            return res.status(500).json({ message: 'Failed to delete student' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Student not found or not a student' });
+        }
+
+        res.status(200).json({ message: 'Student deleted successfully' });
+    });
+};
 exports.getStudents = (req, res) => {
     User.getStudents((err, results) => {
         if (err) {
