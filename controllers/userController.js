@@ -47,6 +47,45 @@ exports.deleteStudent = (req, res) => {
         res.status(200).json({ message: 'Student deleted successfully' });
     });
 };
+
+exports.updateTeacher = (req, res) => {
+    const { Full_Name, Class, Phone_Number, email_address, Password } = req.body;
+
+    const updatedData = {
+        ...(Full_Name && { Full_Name }),
+        ...(Class && { Class }),
+        ...(Phone_Number && { Phone_Number }),
+        ...(email_address && { email_address }),
+        ...(Password && { Password }),
+    };
+
+    User.update(req.params.id, updatedData, (err, result) => {
+        if (err) {
+            console.error("Error updating teacher:", err);
+            return res.status(500).json({ error: "Failed to update teacher" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Teacher not found" });
+        }
+        res.json({ message: "Teacher updated successfully" });
+    });
+};
+// A new function in userController.js
+exports.getTeacherById = (req, res) => {
+    User.getById(req.params.id, (err, result) => {
+        if (err) throw err;
+        if (result[0] && result[0].User_type === 'Teacher') {
+            const user = {
+                ...result[0],
+                // Your date formatting logic here
+            };
+            res.status(200).json(user);
+        } else {
+            res.status(404).json({ message: 'Teacher not found' });
+        }
+    });
+};
+
 exports.getStudents = (req, res) => {
     User.getStudents((err, results) => {
         if (err) {
@@ -60,19 +99,17 @@ exports.getStudents = (req, res) => {
 exports.getUserById = (req, res) => {
     User.getById(req.params.id, (err, result) => {
         if (err) throw err;
-
         if (result[0]) {
-            // Format the date before sending response
             const user = {
                 ...result[0],
                 Date_of_Birth: new Date(result[0].Date_of_Birth).toLocaleDateString('en-GB', {
                     timeZone: 'Asia/Kolkata'
                 })
             };
-
             res.status(200).json(user);
         } else {
-            res.status(404).json([]);
+            // Send a 404 Not Found response with a clear message or an empty object
+            res.status(404).json({});
         }
     });
 };
