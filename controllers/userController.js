@@ -70,6 +70,31 @@ exports.updateTeacher = (req, res) => {
         res.json({ message: "Teacher updated successfully" });
     });
 };
+exports.updateStudent = (req, res) => {
+    const { Full_Name, Class, Phone_Number, email_address, Parents_name, Password, Date_of_Birth } = req.body;
+
+    const updatedData = {
+        ...(Full_Name && { Full_Name }),
+        ...(Class && { Class }),
+        ...(Phone_Number && { Phone_Number }),
+        ...(email_address && { email_address }),
+        ...(Parents_name && { Parents_name }),
+        ...(Password && { Password }),
+        ...(Date_of_Birth && { Date_of_Birth })
+    };
+
+    User.update(req.params.id, updatedData, (err, result) => {
+        if (err) {
+            console.error("Error updating student:", err);
+            return res.status(500).json({ error: "Failed to update student" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+        res.json({ message: "Student updated successfully" });
+    });
+};
+
 // A new function in userController.js
 exports.getTeacherById = (req, res) => {
     User.getById(req.params.id, (err, result) => {

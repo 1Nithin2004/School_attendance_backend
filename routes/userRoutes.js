@@ -22,6 +22,7 @@ router.delete('/students/:id', userController.deleteStudent);
 router.delete('/:id', userController.deleteUser);
 
 // PUT routes
+router.put('/updateStudent/:id', userController.updateStudent);
 router.put('/:id', userController.updateUser);
 router.put('/teachers/:id', userController.updateTeacher);
 
