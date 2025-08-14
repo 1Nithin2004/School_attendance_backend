@@ -292,3 +292,15 @@ exports.addStudent = (req, res) => {
         res.status(201).json({ message: 'Student added successfully', id: result.insertId });
     });
 };
+
+exports.getParentNameByEmail = (req, res) => {
+    const email = req.params.email;
+    const query = `SELECT Parents_name FROM user WHERE email_address = ? AND User_type='parent'`;
+    
+    db.query(query, [email], (err, results) => {
+        if (err) return res.status(500).json({ error: err });
+        if (results.length === 0) return res.status(404).json({ message: "Parent not found" });
+        
+        res.json({ parentName: results[0].Parents_name });
+    });
+};

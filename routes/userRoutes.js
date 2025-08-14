@@ -28,5 +28,8 @@ router.put('/teachers/:id', userController.updateTeacher);
 
 // Generic GET route last to prevent conflicts
 router.get('/:id', userController.getUserById);
+// Get parent name by email
+router.get('/parent/name/:email', userController.getParentNameByEmail);
+
 
 module.exports = router;

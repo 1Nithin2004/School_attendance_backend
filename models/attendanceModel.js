@@ -1,7 +1,5 @@
 const db = require('../config/db');
 
-const Attendance = require('../models/attendanceModel');
-
 exports.markAttendance = (data, callback) => {
     const { studentId, classId, date, teacherId, status } = data;
 
@@ -27,3 +25,20 @@ exports.markAttendance = (data, callback) => {
         db.query(insertQuery, [studentId, classId, date, teacherId, status], callback);
     });
 };
+
+exports.getParentChildrenAttendance = (parentName, callback) => {
+    const query = `
+        SELECT u.Id AS student_id, u.Full_Name,
+               COUNT(a.id) AS totalDays,
+               SUM(CASE WHEN a.status='Present' THEN 1 ELSE 0 END) AS presentDays,
+               SUM(CASE WHEN a.status='Absent' THEN 1 ELSE 0 END) AS absentDays
+        FROM user u
+        LEFT JOIN attendance a ON u.Id = a.student_id
+        WHERE u.Parents_name = ? AND u.User_type='student'
+        GROUP BY u.Id, u.Full_Name
+    `;
+
+    db.query(query, [parentName], callback);
+};
+
+
