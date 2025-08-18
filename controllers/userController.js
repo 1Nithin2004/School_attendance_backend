@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const db = require('../config/db'); // path to your MySQL connection
 
 exports.getUsers = (req, res) => {
     User.getAll((err, results) => {
@@ -98,11 +99,15 @@ exports.updateStudent = (req, res) => {
 // A new function in userController.js
 exports.getTeacherById = (req, res) => {
     User.getById(req.params.id, (err, result) => {
-        if (err) throw err;
+        if (err) return res.status(500).json({ error: err.message });
+
         if (result[0] && result[0].User_type === 'Teacher') {
             const user = {
                 ...result[0],
-                // Your date formatting logic here
+                Date_of_Birth: result[0].Date_of_Birth 
+                    ? new Date(result[0].Date_of_Birth)
+                        .toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })
+                    : null
             };
             res.status(200).json(user);
         } else {
@@ -110,6 +115,7 @@ exports.getTeacherById = (req, res) => {
         }
     });
 };
+
 
 exports.getStudents = (req, res) => {
     User.getStudents((err, results) => {
@@ -302,5 +308,54 @@ exports.getParentNameByEmail = (req, res) => {
         if (results.length === 0) return res.status(404).json({ message: "Parent not found" });
         
         res.json({ parentName: results[0].Parents_name });
+    });
+};
+
+// GET parent children attendance by parent email
+exports.getParentChildrenAttendanceByEmail = (req, res) => {
+    const email = req.params.email;
+
+    // First, get parent name from email
+    const parentQuery = `SELECT Parents_name FROM user WHERE email_address = ? AND User_type='Parent'`;
+    db.query(parentQuery, [email], (err, parentResult) => {
+        if (err) return res.status(500).json({ error: err });
+        if (parentResult.length === 0) return res.status(404).json({ message: "Parent not found" });
+
+        const parentName = parentResult[0].Parents_name;
+
+        // Now fetch children attendance
+        const query = `
+            SELECT u.Id AS student_id, u.Full_Name,
+                   COUNT(a.id) AS totalDays,
+                   SUM(CASE WHEN a.status='Present' THEN 1 ELSE 0 END) AS presentDays,
+                   SUM(CASE WHEN a.status='Absent' THEN 1 ELSE 0 END) AS absentDays
+            FROM user u
+            LEFT JOIN attendance a ON u.Id = a.student_id
+            WHERE u.Parents_name = ? AND u.User_type='student'
+            GROUP BY u.Id, u.Full_Name
+        `;
+
+        db.query(query, [parentName], (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+
+            const report = results.map(result => {
+                const present = result.presentDays || 0;
+                const total = result.totalDays || 0;
+                const absent = result.absentDays || 0;
+                const percentage = total > 0 ? (present / total) * 100 : 0;
+
+                return {
+                    student_id: result.student_id,
+                    name: result.Full_Name,
+                    total_days: total,
+                    present_days: present,
+                    absent_days: absent,
+                    attendance_percentage: Number(percentage.toFixed(2)),
+                    status: percentage >= 70 ? 'green' : (percentage >= 50 ? 'yellow' : 'red')
+                };
+            });
+
+            res.status(200).json(report);
+        });
     });
 };

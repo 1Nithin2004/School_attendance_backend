@@ -8,8 +8,6 @@ router.get('/attendance/report/:classId', attendanceController.getAttendanceRepo
 router.get('/student/:studentId/report', attendanceController.getStudentReport);
 
 router.get('/report/:classId', attendanceController.getAttendanceReport);
-// Get all children attendance for a parent
 router.get('/parent/:parentName/attendance', attendanceController.getParentChildrenAttendance);
-
 
 module.exports = router;

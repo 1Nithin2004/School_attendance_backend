@@ -2,12 +2,16 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 
-// Specific GET routes first
+// Specific routes first
 router.get('/getUsers', userController.getUsers);
 router.get('/getTeachers', userController.getTeachers);
 router.get('/getStudents', userController.getStudents);
 router.get('/class/:class_id', userController.getClassStudents);
-router.get('/teachers/:id', userController.getTeacherById); // Corrected and unique route
+router.get('/teachers/:id', userController.getTeacherById);
+
+// Parent attendance by email
+router.get('/parent/attendance/:email', userController.getParentChildrenAttendanceByEmail);
+router.get('/parent/name/:email', userController.getParentNameByEmail);
 
 // POST routes
 router.post('/createUser', userController.createUser);
@@ -26,10 +30,7 @@ router.put('/updateStudent/:id', userController.updateStudent);
 router.put('/:id', userController.updateUser);
 router.put('/teachers/:id', userController.updateTeacher);
 
-// Generic GET route last to prevent conflicts
+// Generic GET route last
 router.get('/:id', userController.getUserById);
-// Get parent name by email
-router.get('/parent/name/:email', userController.getParentNameByEmail);
-
 
 module.exports = router;
