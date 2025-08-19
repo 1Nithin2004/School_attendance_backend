@@ -10,7 +10,7 @@ router.get('/class/:class_id', userController.getClassStudents);
 router.get('/teachers/:id', userController.getTeacherById);
 
 // Parent attendance by email
-router.get('/parent/attendance/:email', userController.getParentChildrenAttendanceByEmail);
+router.get('/parent/:email/attendance', userController.getParentAttendance);
 router.get('/parent/name/:email', userController.getParentNameByEmail);
 
 // POST routes

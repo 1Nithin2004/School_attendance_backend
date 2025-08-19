@@ -311,51 +311,30 @@ exports.getParentNameByEmail = (req, res) => {
     });
 };
 
-// GET parent children attendance by parent email
-exports.getParentChildrenAttendanceByEmail = (req, res) => {
-    const email = req.params.email;
+// controllers/userController.js
+exports.getParentAttendance = (req, res) => {
+  const email = req.params.email;
 
-    // First, get parent name from email
-    const parentQuery = `SELECT Parents_name FROM user WHERE email_address = ? AND User_type='Parent'`;
-    db.query(parentQuery, [email], (err, parentResult) => {
-        if (err) return res.status(500).json({ error: err });
-        if (parentResult.length === 0) return res.status(404).json({ message: "Parent not found" });
+  const query = `
+    SELECT u.Full_Name, u.Class,
+           SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS classes_present,
+           SUM(CASE WHEN a.status = 'Absent' THEN 1 ELSE 0 END) AS classes_absent,
+           COUNT(a.id) AS total,
+           ROUND(SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) / COUNT(a.id) * 100, 2) AS percentage
+    FROM user u
+    JOIN attendance a ON u.Id = a.student_id
+    WHERE u.email_address = ? AND u.User_type = 'Parent'
+    GROUP BY u.Id;
+  `;
 
-        const parentName = parentResult[0].Parents_name;
-
-        // Now fetch children attendance
-        const query = `
-            SELECT u.Id AS student_id, u.Full_Name,
-                   COUNT(a.id) AS totalDays,
-                   SUM(CASE WHEN a.status='Present' THEN 1 ELSE 0 END) AS presentDays,
-                   SUM(CASE WHEN a.status='Absent' THEN 1 ELSE 0 END) AS absentDays
-            FROM user u
-            LEFT JOIN attendance a ON u.Id = a.student_id
-            WHERE u.Parents_name = ? AND u.User_type='student'
-            GROUP BY u.Id, u.Full_Name
-        `;
-
-        db.query(query, [parentName], (err, results) => {
-            if (err) return res.status(500).json({ error: err });
-
-            const report = results.map(result => {
-                const present = result.presentDays || 0;
-                const total = result.totalDays || 0;
-                const absent = result.absentDays || 0;
-                const percentage = total > 0 ? (present / total) * 100 : 0;
-
-                return {
-                    student_id: result.student_id,
-                    name: result.Full_Name,
-                    total_days: total,
-                    present_days: present,
-                    absent_days: absent,
-                    attendance_percentage: Number(percentage.toFixed(2)),
-                    status: percentage >= 70 ? 'green' : (percentage >= 50 ? 'yellow' : 'red')
-                };
-            });
-
-            res.status(200).json(report);
-        });
-    });
+  db.query(query, [email], (err, result) => {
+    if (err) {
+      console.error("Error fetching parent attendance:", err);
+      return res.status(500).json({ error: err });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No attendance found for this parent" });
+    }
+    res.json(result[0]);
+  });
 };
